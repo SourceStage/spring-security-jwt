@@ -5,17 +5,38 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.example.spring_security_jwt.dto.ApiResponse;
+import com.example.spring_security_jwt.dto.ErrorCode;
+
 @ControllerAdvice
 public class GlobalExceptionHandle {
 
-	@ExceptionHandler(value = RuntimeException.class)
-	ResponseEntity<String> handlingRuntimeException(RuntimeException exception) {
-		return ResponseEntity.badRequest().body(exception.getMessage());
+	@ExceptionHandler(value = LogicException.class)
+	ResponseEntity<ApiResponse<String>> handlingRuntimeException(LogicException exception) {
+		var errorCode = exception.getErrorCode();
+		var response = new ApiResponse<String>();
+		response.setCode(errorCode.getCode());
+		response.setBody(errorCode.getMessage());
+
+		return ResponseEntity.badRequest().body(response);
 	}
-	
+
 	@ExceptionHandler(value = MethodArgumentNotValidException.class)
-	ResponseEntity<String> handlingMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-		String errors = exception.getFieldError().getDefaultMessage();
-		return ResponseEntity.badRequest().body(errors);
+	ResponseEntity<ApiResponse<String>> handlingMethodArgumentNotValidException(
+			MethodArgumentNotValidException exception) {
+		String errorsEnumKey = exception.getFieldError().getDefaultMessage();
+
+		ErrorCode errorCode = ErrorCode.INVALID_KEY_VALIDATE;
+
+		try {
+			errorCode = ErrorCode.valueOf(errorsEnumKey);
+		} catch (IllegalArgumentException e) {
+		}
+
+		var response = new ApiResponse<String>();
+		response.setCode(errorCode.getCode());
+		response.setBody(errorCode.getMessage());
+
+		return ResponseEntity.badRequest().body(response);
 	}
 }

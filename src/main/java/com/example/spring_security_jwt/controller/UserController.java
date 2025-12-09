@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.spring_security_jwt.dto.ApiResponse;
 import com.example.spring_security_jwt.dto.UserRequest;
 import com.example.spring_security_jwt.entity.User;
 import com.example.spring_security_jwt.service.UserService;
@@ -31,8 +32,10 @@ public class UserController {
 	}
 
 	@GetMapping
-	List<User> getUsers() {
-		return userService.getUsers();
+	ApiResponse<List<User>> getUsers() {
+		var response = new ApiResponse<List<User>>();
+		response.setBody(userService.getUsers());
+		return response;
 	}
 
 	@GetMapping("/{userId}")

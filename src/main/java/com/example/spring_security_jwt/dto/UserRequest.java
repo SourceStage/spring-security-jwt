@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class UserRequest {
 
-	@Size(max = 10, message = "Maxlengh username < 10 character!")
+	@Size(max = 10, message = "INVALID_USERNAME")
 	private String username;
 	private String email;
 	private String password;

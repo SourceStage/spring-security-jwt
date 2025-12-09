@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.spring_security_jwt.dto.ErrorCode;
 import com.example.spring_security_jwt.dto.UserRequest;
 import com.example.spring_security_jwt.entity.User;
+import com.example.spring_security_jwt.exception.LogicException;
 import com.example.spring_security_jwt.repository.UserRepository;
 
 import lombok.AllArgsConstructor;
@@ -39,7 +41,7 @@ public class UserService {
 	}
 
 	public User getUserById(Long id) {
-		return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found!"));
+		return userRepository.findById(id).orElseThrow(() -> new LogicException(ErrorCode.USER_EXISTED));
 	}
 
 	public List<User> getUsers() {
