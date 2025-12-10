@@ -1,47 +1,85 @@
 package com.example.spring_security_jwt.util;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
 
-import com.example.spring_security_jwt.dto.JwtProperty;
+import org.springframework.stereotype.Component;
+
+import com.example.spring_security_jwt.config.JwtProperty;
+import com.example.spring_security_jwt.dto.ErrorCode;
 import com.example.spring_security_jwt.dto.UserAuthenticated;
+import com.example.spring_security_jwt.exception.JwtException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 
 import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Data
 public final class JWTUtil {
 
-	public static String generateToken(UserAuthenticated user, JwtProperty property) {
+	JwtProperty jwtProperty;
+
+	public String generateToken(UserAuthenticated user) {
 		JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
-		JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder().subject(user.getUsername()).issuer("devteria.com")
-				.issueTime(new Date())
-				.expirationTime(
-						new Date(Instant.now().plus(property.getValidDuration(), ChronoUnit.SECONDS).toEpochMilli()))
-				.jwtID(UUID.randomUUID().toString()).build();
+		var iss = jwtProperty.getIssue();
+		var iat = new Date();
+		var exp = new Date(Instant.now().plus(jwtProperty.getExpirationTime(), ChronoUnit.SECONDS).toEpochMilli());
+		var jti = UUID.randomUUID().toString();
+
+		// @formatter:off
+		JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+				.subject(user.getUsername())
+				.issuer(iss)
+				.issueTime(iat)
+				.expirationTime(exp)
+				.jwtID(jti)
+				.build();
+		// @formatter:on
 
 		Payload payload = new Payload(jwtClaimsSet.toJSONObject());
 
 		JWSObject jwsObject = new JWSObject(header, payload);
 
 		try {
-			jwsObject.sign(new MACSigner(property.getSecret().getBytes()));
+			byte[] secret = jwtProperty.getSecret().getBytes();
+			var macSigner = new MACSigner(secret);
+
+			jwsObject.sign(macSigner);
 			return jwsObject.serialize();
 		} catch (JOSEException e) {
-			log.error("Cannot create token", e);
-			throw new RuntimeException(e);
+			throw new JwtException(ErrorCode.JWT_ERROR);
 		}
+	}
+
+	public boolean verifyToken(String token) throws JOSEException, ParseException {
+		byte[] secret = jwtProperty.getSecret().getBytes();
+		JWSVerifier verifier = new MACVerifier(secret);
+
+		SignedJWT signedJWT = SignedJWT.parse(token);
+
+		Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+		boolean verified = signedJWT.verify(verifier);
+		boolean isStillValid = expiryTime.after(new Date());
+
+		return verified && isStillValid;
 	}
 }
