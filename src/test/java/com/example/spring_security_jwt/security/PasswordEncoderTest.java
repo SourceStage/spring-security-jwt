@@ -40,7 +40,7 @@ public class PasswordEncoderTest {
 	void bcrypt() throws NoSuchAlgorithmException {
 		String rawPassword = "12345";
 
-		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
 		String encodePasswordRound1 = passwordEncoder.encode(rawPassword);
 		String encodePasswordRound2 = passwordEncoder.encode(rawPassword);

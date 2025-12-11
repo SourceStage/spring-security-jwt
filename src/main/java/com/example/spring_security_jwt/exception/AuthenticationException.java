@@ -7,15 +7,14 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class JwtException extends ApiException {
+public class AuthenticationException extends ApiException {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -162202417130981185L;
+	private static final long serialVersionUID = -3213039911533560436L;
 
-	public JwtException(ErrorCode errorCode) {
+	public AuthenticationException(ErrorCode errorCode) {
 		super(errorCode);
 	}
-
 }

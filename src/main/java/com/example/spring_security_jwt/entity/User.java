@@ -1,6 +1,7 @@
 package com.example.spring_security_jwt.entity;
 
 import java.sql.Timestamp;
+import java.util.Set;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,5 +25,6 @@ public class User {
 	private boolean isActive;
 	private Timestamp createdAt;
 	private Timestamp updatedAt;
+	private Set<String> roles;
 
 }

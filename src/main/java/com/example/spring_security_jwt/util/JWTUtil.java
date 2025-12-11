@@ -69,17 +69,20 @@ public final class JWTUtil {
 		}
 	}
 
-	public boolean verifyToken(String token) throws JOSEException, ParseException {
+	public boolean verifyToken(String token) {
 		byte[] secret = jwtProperty.getSecret().getBytes();
-		JWSVerifier verifier = new MACVerifier(secret);
+		JWSVerifier verifier;
+		try {
+			verifier = new MACVerifier(secret);
+			SignedJWT signedJWT = SignedJWT.parse(token);
+			Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-		SignedJWT signedJWT = SignedJWT.parse(token);
+			boolean verified = signedJWT.verify(verifier);
+			boolean isStillValid = expiryTime.after(new Date());
 
-		Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-		boolean verified = signedJWT.verify(verifier);
-		boolean isStillValid = expiryTime.after(new Date());
-
-		return verified && isStillValid;
+			return verified && isStillValid;
+		} catch (JOSEException | ParseException e) {
+			throw new JwtException(ErrorCode.JWT_ERROR);
+		}
 	}
 }

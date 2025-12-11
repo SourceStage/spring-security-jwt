@@ -39,4 +39,14 @@ public class GlobalExceptionHandle {
 
 		return ResponseEntity.badRequest().body(response);
 	}
+
+	@ExceptionHandler(value = ApiException.class)
+	ResponseEntity<ApiResponse<String>> handlingAuthenticationException(ApiException exception) {
+		var errorCode = exception.getErrorCode();
+		var response = new ApiResponse<String>();
+		response.setCode(errorCode.getCode());
+		response.setBody(errorCode.getMessage());
+
+		return ResponseEntity.badRequest().body(response);
+	}
 }

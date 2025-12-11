@@ -23,4 +23,9 @@ public class UserAuthenticated extends User {
 			Collection<? extends GrantedAuthority> authorities) {
 		super(username, password, authorities);
 	}
+
+	public static UserAuthenticated createUserErasePassword(String username,
+			Collection<? extends GrantedAuthority> authorities) {
+		return new UserAuthenticated(username, null, authorities);
+	}
 }
