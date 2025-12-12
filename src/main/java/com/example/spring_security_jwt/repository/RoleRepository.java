@@ -5,10 +5,10 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.spring_security_jwt.entity.UserEntity;
+import com.example.spring_security_jwt.entity.RoleEntity;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, Long> {
+public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
 
-	Optional<UserEntity> findByUsername(String username);
+	Optional<RoleEntity> findByRoleName(String roleName);
 }

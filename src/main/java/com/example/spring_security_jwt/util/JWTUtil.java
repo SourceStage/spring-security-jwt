@@ -4,11 +4,14 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
 import com.example.spring_security_jwt.config.JwtProperty;
+import com.example.spring_security_jwt.constant.RoleEnum;
 import com.example.spring_security_jwt.dto.ErrorCode;
 import com.example.spring_security_jwt.dto.UserAuthenticated;
 import com.example.spring_security_jwt.exception.JwtException;
@@ -50,6 +53,7 @@ public final class JWTUtil {
 				.issuer(iss)
 				.issueTime(iat)
 				.expirationTime(exp)
+				.claim("scope", buildScope(user))
 				.jwtID(jti)
 				.build();
 		// @formatter:on
@@ -84,5 +88,21 @@ public final class JWTUtil {
 		} catch (JOSEException | ParseException e) {
 			throw new JwtException(ErrorCode.JWT_ERROR);
 		}
+	}
+
+	private String buildScope(UserAuthenticated user) {
+		var stringJoiner = new StringJoiner(" ");
+		List<String> roles = user.getAuthorities().stream().map(item -> item.getAuthority()).toList();
+
+		roles.forEach(roleName -> {
+			if (RoleEnum.contains(roleName)) {
+				String prefixRole = "ROLE_";
+				stringJoiner.add(prefixRole + roleName);
+			} else {
+				stringJoiner.add(roleName);
+			}
+		});
+
+		return stringJoiner.toString();
 	}
 }

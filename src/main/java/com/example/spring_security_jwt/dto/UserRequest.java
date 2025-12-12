@@ -1,5 +1,7 @@
 package com.example.spring_security_jwt.dto;
 
+import java.util.List;
+
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -12,4 +14,5 @@ public class UserRequest {
 	private String password;
 	private String fullName;
 	private String token;
+	private List<String> roles;
 }

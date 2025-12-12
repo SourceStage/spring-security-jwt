@@ -7,6 +7,15 @@ CREATE TABLE roles (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
+-- ===================== TABLE PERMISSION =====================
+CREATE TABLE permissions (
+    id SERIAL PRIMARY KEY,
+    permission_name VARCHAR(50) UNIQUE NOT NULL,
+    permission_description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
 -- ===================== TABLE USERS =====================
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -26,12 +35,25 @@ CREATE TABLE user_roles (
     PRIMARY KEY (user_id, role_id)
 );
 
+-- ===================== ROLE ↔ PERMISSTION =====================
+CREATE TABLE role_permissions (
+    role_id INT REFERENCES roles(id) ON DELETE CASCADE,
+    permission_id INT REFERENCES permissions(id) ON DELETE CASCADE,
+    PRIMARY KEY (role_id, permission_id)
+);
+
 -- ===================== DEFAULT ROLES =====================
 INSERT INTO roles (role_name, role_description)
 VALUES 
     ('admin', 'Full system access'),
     ('user', 'Standard user'),
     ('guest', 'Guest user read-only');
+    
+INSERT INTO permissions (permission_name, permission_description)
+VALUES 
+    ('create', 'create'),
+    ('update', 'update'),
+    ('delete', 'delete');
 
     
     CREATE TABLE refresh_tokens (
