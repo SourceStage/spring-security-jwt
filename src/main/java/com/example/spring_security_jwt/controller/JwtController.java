@@ -1,6 +1,5 @@
 package com.example.spring_security_jwt.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,17 +9,16 @@ import com.example.spring_security_jwt.dto.ApiResponse;
 import com.example.spring_security_jwt.dto.AuthenticationResponse;
 import com.example.spring_security_jwt.dto.UserRequest;
 import com.example.spring_security_jwt.service.AuthenticationService;
-import com.example.spring_security_jwt.util.JWTUtil;
+import com.example.spring_security_jwt.util.RestUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api")
 public class JwtController {
-
-	@Autowired
-	private AuthenticationService authenticationService;
-
-	@Autowired
-	private JWTUtil jwtUtil;
+	private final AuthenticationService authenticationService;
 
 	@PostMapping("/login")
 	ApiResponse<AuthenticationResponse> login(@RequestBody UserRequest userRequest) {
@@ -29,12 +27,27 @@ public class JwtController {
 		return respsone;
 	}
 
+	@PostMapping("/logout")
+	ApiResponse<Void> logout(HttpServletRequest request) {
+		String token = RestUtil.getBearerToken(request);
+		authenticationService.logout(token);
+		return ApiResponse.<Void>builder().build();
+	}
+
 	@PostMapping("/introspect")
-	ApiResponse<AuthenticationResponse> checkToken(@RequestBody UserRequest userRequest) {
+	ApiResponse<AuthenticationResponse> introspect(HttpServletRequest request) {
 		var respsone = new ApiResponse<AuthenticationResponse>();
 		var body = new AuthenticationResponse();
-		body.setIsTokenValid(jwtUtil.verifyToken(userRequest.getToken()));
+		String token = RestUtil.getBearerToken(request);
+		body.setIsTokenValid(authenticationService.introspect(token));
 		respsone.setBody(body);
 		return respsone;
+	}
+
+	@PostMapping("/refresh")
+	ApiResponse<AuthenticationResponse> refreshToken(HttpServletRequest request) {
+		String token = RestUtil.getBearerToken(request);
+		var result = authenticationService.refreshToken(token);
+		return ApiResponse.<AuthenticationResponse>builder().body(result).build();
 	}
 }

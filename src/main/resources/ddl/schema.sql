@@ -71,3 +71,9 @@ VALUES
     
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- ===================== INVALID TOKEN =====================
+CREATE TABLE invalid_token (
+    id UUID PRIMARY KEY,
+    expires_at TIMESTAMP NOT NULL
+);

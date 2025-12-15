@@ -21,4 +21,7 @@ public class JwtProperty {
 
 	@Value("${spring.security.jwt.valid-duration}")
 	Long expirationTime;
+
+	@Value("${spring.security.jwt.refreshable-duration}")
+	Long refreshableDuration;
 }

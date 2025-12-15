@@ -83,4 +83,14 @@ public class UserService {
 		return userRepository.findByUsername(username)
 				.orElseThrow(() -> new AuthenticationException(ErrorCode.UN_AUTHENTICATION));
 	}
+
+	public UserEntity checkUserLogin(String username, String rawPassword) {
+		UserEntity userFound = getUserByUsername(username);
+
+		if (passwordEncoder.matches(rawPassword, userFound.getPassword())) {
+			throw new AuthenticationException(ErrorCode.UN_AUTHENTICATION);
+		}
+
+		return userFound;
+	}
 }

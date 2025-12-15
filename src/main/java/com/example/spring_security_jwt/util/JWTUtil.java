@@ -14,7 +14,9 @@ import com.example.spring_security_jwt.config.JwtProperty;
 import com.example.spring_security_jwt.constant.RoleEnum;
 import com.example.spring_security_jwt.dto.ErrorCode;
 import com.example.spring_security_jwt.dto.UserAuthenticated;
+import com.example.spring_security_jwt.exception.AuthenticationException;
 import com.example.spring_security_jwt.exception.JwtException;
+import com.example.spring_security_jwt.repository.InvalidTokenRepository;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -38,6 +40,8 @@ import lombok.extern.slf4j.Slf4j;
 public final class JWTUtil {
 
 	JwtProperty jwtProperty;
+
+	InvalidTokenRepository invalidTokenRepository;
 
 	public String generateToken(UserAuthenticated user) {
 		JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
@@ -73,20 +77,63 @@ public final class JWTUtil {
 		}
 	}
 
-	public boolean verifyToken(String token) {
-		byte[] secret = jwtProperty.getSecret().getBytes();
-		JWSVerifier verifier;
+	public SignedJWT verifyToken(String token, boolean isRefresh) {
 		try {
-			verifier = new MACVerifier(secret);
-			SignedJWT signedJWT = SignedJWT.parse(token);
-			Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+			SignedJWT signedJWT = verifySignedToken(token);
 
-			boolean verified = signedJWT.verify(verifier);
-			boolean isStillValid = expiryTime.after(new Date());
+			checkTokenExpirationTime(signedJWT, isRefresh);
 
-			return verified && isStillValid;
-		} catch (JOSEException | ParseException e) {
+			checkTokenLoggedOut(signedJWT);
+
+			return signedJWT;
+
+		} catch (JOSEException | ParseException | JwtException | AuthenticationException e) {
+			throw new AuthenticationException(ErrorCode.UN_AUTHENTICATION);
+		}
+	}
+
+	public String getSubjectFromToken(SignedJWT signedJWT) {
+		try {
+			var claim = signedJWT.getJWTClaimsSet();
+			return claim.getSubject();
+		} catch (ParseException e) {
 			throw new JwtException(ErrorCode.JWT_ERROR);
+		}
+	}
+
+	private SignedJWT verifySignedToken(String token) throws JOSEException, ParseException {
+		byte[] secret = jwtProperty.getSecret().getBytes();
+		JWSVerifier verifier = new MACVerifier(secret);
+		SignedJWT signedJWT = SignedJWT.parse(token);
+
+		boolean verified = signedJWT.verify(verifier);
+
+		if (!verified) {
+			throw new JwtException(ErrorCode.JWT_ERROR);
+		}
+
+		return signedJWT;
+	}
+
+	private void checkTokenExpirationTime(SignedJWT signedJWT, boolean isRefresh) throws ParseException {
+		Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+		if (isRefresh) {
+			expiryTime = new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant()
+					.plus(jwtProperty.getRefreshableDuration(), ChronoUnit.SECONDS).toEpochMilli());
+		}
+
+		Date currentDate = new Date();
+		if (expiryTime.before(currentDate)) {
+			throw new JwtException(ErrorCode.JWT_ERROR);
+		}
+	}
+
+	private void checkTokenLoggedOut(SignedJWT signedJWT) throws ParseException {
+		var jti = signedJWT.getJWTClaimsSet().getJWTID();
+
+		if (invalidTokenRepository.existsById(jti)) {
+			throw new AuthenticationException(ErrorCode.UN_AUTHENTICATION);
 		}
 	}
 

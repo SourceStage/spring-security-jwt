@@ -1,31 +1,25 @@
 package com.example.spring_security_jwt.config;
 
-import javax.crypto.spec.SecretKeySpec;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
-import lombok.AllArgsConstructor;
-
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
-@AllArgsConstructor
 public class SecurityConfig {
 
 	private static final String BASE_URL_API = "/api/**";
-	private static final String[] PUBLIC_URL = new String[] { "/api/login", "/api/introspect" };
+	private static final String[] PUBLIC_URL = new String[] { "/api/login", "/api/introspect", "/api/refresh" };
 
-	private final JwtProperty jwtProperty;
+	@Autowired
+	private ApiJwtDecoder apiJwtDecoder;
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) {
@@ -36,9 +30,9 @@ public class SecurityConfig {
 				.authorizeHttpRequests(rq -> rq.requestMatchers(PUBLIC_URL).permitAll()
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(oauth2 -> 
-					oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())
+					oauth2.jwt(jwt -> jwt.decoder(apiJwtDecoder)
 							.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-				)
+						.authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
 				.build();
 		// @formatter:on
 	}
@@ -46,12 +40,6 @@ public class SecurityConfig {
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(12);
-	}
-
-	@Bean
-	JwtDecoder jwtDecoder() {
-		var secretKeySpec = new SecretKeySpec(jwtProperty.getSecret().getBytes(), "HS512");
-		return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS512).build();
 	}
 
 	@Bean

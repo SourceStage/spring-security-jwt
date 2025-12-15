@@ -13,6 +13,5 @@ public class UserRequest {
 	private String email;
 	private String password;
 	private String fullName;
-	private String token;
 	private List<String> roles;
 }
