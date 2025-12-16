@@ -13,16 +13,11 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
   jpa:
+    hibernate:
+      ddl-auto: create-drop
     show-sql: true
-  jackson:
-    mapper:
-      sort-properties-alphabetically: false
-  security:
-    jwt:
-      issue: localhost
-      signerKey: 1TjXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij
-      valid-duration: 3600 # in second
-      refreshable-duration: 36000 # in seconds
-server:
-  servlet:
-    context-path: /identity
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
