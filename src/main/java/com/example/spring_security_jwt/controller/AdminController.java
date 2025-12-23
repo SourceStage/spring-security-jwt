@@ -1,0 +1,16 @@
+package com.example.spring_security_jwt.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+public class AdminController extends BaseController {
+
+  @GetMapping("admin")
+  public ResponseEntity<String> showDashboard() {
+    return ResponseEntity.ok("AdminController: showDashboard");
+  }
+}

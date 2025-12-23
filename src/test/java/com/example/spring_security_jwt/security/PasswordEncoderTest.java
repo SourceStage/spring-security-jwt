@@ -2,14 +2,16 @@ package com.example.spring_security_jwt.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
+import javax.crypto.SecretKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
 import jakarta.xml.bind.DatatypeConverter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,5 +51,14 @@ public class PasswordEncoderTest {
     log.info("BCrypt round 2: {}", encodePasswordRound2);
 
     assertNotEquals(encodePasswordRound1, encodePasswordRound2);
+  }
+
+  @Test
+  void generatebase64Key() {
+    SecretKey key = Jwts.SIG.HS256.key().build();
+    String base64Key = Encoders.BASE64.encode(key.getEncoded());
+
+    log.info("Secret Key HS256 (256 bit): {}", base64Key);
+    assertNotNull(base64Key);
   }
 }
