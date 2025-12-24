@@ -3,6 +3,7 @@ package com.example.spring_security_jwt.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,6 +14,7 @@ import com.example.spring_security_jwt.constant.AppUrlConstants;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -36,7 +38,6 @@ public class SecurityConfig {
                           .anyRequest().authenticated());
     
     httpSecurity.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-    
 
     httpSecurity.authenticationProvider(authenticationProvider);
     

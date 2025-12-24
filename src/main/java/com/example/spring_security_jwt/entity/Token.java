@@ -1,6 +1,7 @@
 package com.example.spring_security_jwt.entity;
 
 import com.example.spring_security_jwt.constant.TokenType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,6 +41,7 @@ public class Token {
   private boolean expired;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JsonBackReference
   @JoinColumn(name = "user_id")
   public User user;
 }

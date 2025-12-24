@@ -65,9 +65,9 @@ public class AuthenticationService {
   public DataOperationResponse register(UserRequest userRequest) {
     String passwordEncode = passwordEncoder.encode(userRequest.getPassword());
 
-    var user =
-        User.builder().firstname(userRequest.getFirstname()).lastname(userRequest.getLastname())
-            .email(userRequest.getEmail()).password(passwordEncode).build();
+    var user = User.builder().firstname(userRequest.getFirstname())
+        .lastname(userRequest.getLastname()).email(userRequest.getEmail()).password(passwordEncode)
+        .role(userRequest.getRole()).build();
 
     userRepository.save(user);
 
