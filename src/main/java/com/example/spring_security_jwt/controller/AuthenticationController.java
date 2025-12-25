@@ -1,5 +1,6 @@
 package com.example.spring_security_jwt.controller;
 
+import java.io.IOException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,6 +10,8 @@ import com.example.spring_security_jwt.dto.AuthenticationResponse;
 import com.example.spring_security_jwt.dto.UserRequest;
 import com.example.spring_security_jwt.service.AuthenticationService;
 import com.example.spring_security_jwt.util.RestControllerUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,5 +30,11 @@ public class AuthenticationController extends BaseController {
   public ResponseEntity<Object> registerUser(@RequestBody UserRequest request) {
     var response = authenticationService.register(request);
     return RestControllerUtil.successResponse(response);
+  }
+
+  @PostMapping("auth/refresh-token")
+  public void refreshToken(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    authenticationService.refreshToken(request, response);
   }
 }

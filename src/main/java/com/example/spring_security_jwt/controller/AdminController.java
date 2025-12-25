@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminController extends BaseController {
 
   @GetMapping("admin")
+  @PreAuthorize("hasAuthority('admin:read')")
   public ResponseEntity<String> showDashboard() {
     return ResponseEntity.ok("AdminController: showDashboard");
   }
